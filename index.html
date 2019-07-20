@@ -2,23 +2,23 @@
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body onload='init()'>
-<svg width=300 height=300>
+<svg width=500 height=500>
 </svg>
 <script>
 async function init() {
-  const data = await d3.csv("https://flunky.github.io/cars2017.csv");
+  const data = await d3.csv("https://maya-jha.github.io/data/wdi.csv");
   margin = 100;
-  height = 200;
-  width = 200;
+  height = 400;
+  width = 400;
   // setup x
-var xValue = function(d) { return d.AverageCityMPG;}, // data -> value
+var xValue = function(d) { return d.HealthExpCapita;}, // data -> value
 //xDomain = [d3.min(data, xValue)-1, d3.max(data, xValue)+1];
-xDomain = [10, 150]
-
-xScale = d3.scaleLog().base(10).domain(xDomain).range([0,width]) // valu
+xDomain = [10, 10000]
+yDomain = [10, 100]
+xScale = d3.scaleLinear.domain(xDomain).range([0,width]) // valu
 
 // setup y
-    yScale = d3.scaleLog().base(10).domain(xDomain).range([height, 0]) // value -> display
+    yScale = d3.scaleLinear.domain(xDomain).range([height, 0]) // value -> display
     //yAxis = d3.svg.axis().scale(yScale).orient("left");
   var svg = d3.select("svg")
               .append("g")
@@ -27,9 +27,9 @@ xScale = d3.scaleLog().base(10).domain(xDomain).range([0,width]) // valu
     .data(data)
     .enter()
     .append("circle")
-    .attr('cx',function(d,i) {return xScale(d.AverageCityMPG);})
-        .attr('cy',function(d, i) { return yScale(d.AverageHighwayMPG); })
-        .attr('r', function(d, i) { return (2+ parseInt(d.EngineCylinders)); })
+    .attr('cx',function(d,i) {return xScale(d.HealthExpCapita);})
+        .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
+        .attr('r', function(d, i) { return (log(parseInt(d.PopulationTotal))); })
 
    d3.select("svg")
   .append("g")
