@@ -6,19 +6,23 @@
 </svg>
 <script>
 async function init() {
-  const data = await d3.csv("https://maya-jha.github.io/data/wdi.csv");
+  const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
   margin = 100;
   height = 400;
   width = 400;
+  maxRadius=10
   // setup x
-var xValue = function(d) { return d.HealthExpCapita;}, // data -> value
+//var xValue = function(d) { return d.HealthExpCapita;}, // data -> value
 //xDomain = [d3.min(data, xValue)-1, d3.max(data, xValue)+1];
-xDomain = [10, 10000]
-yDomain = [10, 100]
-xScale = d3.scaleLinear.domain(xDomain).range([0,width]) // valu
+xDomain = [10, 1000]
+yDomain = [40, 100]
+xScale = d3.scaleLinear().domain(xDomain).range([0, width]) // value -> display
+var rValue = function(d) { return d.PopulationTotal;}, // data -> value
+rDomain = [d3.min(data, rValue)-1, d3.max(data, rValue)+1];
+rScale = d3.scaleLog().base(10).domain(rDomain).range([0,maxRadius]) // valu
 
 // setup y
-    yScale = d3.scaleLinear.domain(xDomain).range([height, 0]) // value -> display
+    yScale = d3.scaleLinear().domain(yDomain).range([height, 0]) // value -> display
     //yAxis = d3.svg.axis().scale(yScale).orient("left");
   var svg = d3.select("svg")
               .append("g")
@@ -27,9 +31,9 @@ xScale = d3.scaleLinear.domain(xDomain).range([0,width]) // valu
     .data(data)
     .enter()
     .append("circle")
-    .attr('cx',function(d,i) {return xScale(d.HealthExpCapita);})
+    .attr('cx',function(d,i) {return xScale(d.HealthExpCapita.trim().replace("$", ""));})
         .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
-        .attr('r', function(d, i) { return (log(parseInt(d.PopulationTotal))); })
+        .attr('r', function(d, i) { return rScale(d.PopulationTotal) })
 
    d3.select("svg")
   .append("g")
@@ -39,7 +43,7 @@ xScale = d3.scaleLinear.domain(xDomain).range([0,width]) // valu
   d3.select("svg")
       .append("g")
       .attr("transform", "translate(" + margin / 2 + "," + (height + margin / 2) + ")")
-      .call(d3.axisBottom().scale(xScale).tickValues([10, 20, 50, 100]).tickFormat(d3.format("~s")));
+      .call(d3.axisBottom().scale(xScale).tickValues([10, 100, 1000, 10000]).tickFormat(d3.format("~s")));
 }
 
 </script>
