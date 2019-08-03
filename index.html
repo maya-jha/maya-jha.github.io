@@ -13,6 +13,18 @@
 .button:hover {
   background-color: green;
 }
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 70px;					
+    height: 28px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
 circle {fill: lightblue; stroke: black;}
 </style>
 <script src='https://d3js.org/d3.v5.min.js'></script>
@@ -47,14 +59,18 @@ async function init() {
 //xDomain = [d3.min(data, xValue)-1, d3.max(data, xValue)+1];
 xDomain = [2, 1024]
 yDomain = [30, 100]
-xScale = d3.scaleLinear().domain(xDomain).range([0, width]) // value -> display
+xScale = d3.scaleLog().base(2).domain(xDomain).range([0, width]) // value -> display
 var rValue = function(d) { return parseInt(d.PopulationTotal);}, // data -> value
 rDomain = [d3.min(data, rValue)-1, d3.max(data, rValue)+1];
-rScale = d3.scaleLog().base(2).domain(rDomain).range([0,maxRadius]) // valu
+rScale = d3.scaleLog().base(10).domain(rDomain).range([0,maxRadius]) // valu
 
 // setup y
     yScale = d3.scaleLinear().domain(yDomain).range([height, 0]) // value -> display
     //yAxis = d3.svg.axis().scale(yScale).orient("left");
+  // Define the div for the tooltip
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
   var svg = d3.select("svg")
               .append("g")
               .attr("transform", "translate(" + margin / 2 + "," + margin / 2 + ")");
@@ -63,9 +79,17 @@ rScale = d3.scaleLog().base(2).domain(rDomain).range([0,maxRadius]) // valu
     .enter()
     .append("circle")
     .filter(function(d) { return d.Year == "12/1/00" })
-    .attr('cx',function(d,i) {return xScale(d.HealthExpCapita.trim().replace("$", ""));})
+    .attr('cx',function(d,i) {return xScale(d.HealthExpCapita.trim().replace("$", "").replace(",", ""));})
         .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
         .attr('r', function(d, i) { return rScale(d.PopulationTotal) })
+        .on("mouseover", function(d) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div.html(d.LifeExpectancyMale + "<br/>"  + d.HealthExpCapita)	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");	
+            })	
 
    d3.select("svg")
   .append("g")
