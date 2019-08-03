@@ -16,8 +16,8 @@
 div.tooltip {	
     position: absolute;			
     text-align: center;			
-    width: 70px;					
-    height: 28px;					
+    width: 160px;					
+    height: 28*2px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: lightsteelblue;	
@@ -57,7 +57,7 @@ async function init() {
   // setup x
 //var xValue = function(d) { return d.HealthExpCapita;}, // data -> value
 //xDomain = [d3.min(data, xValue)-1, d3.max(data, xValue)+1];
-xDomain = [2, 1024]
+xDomain = [2, 4096*2]
 yDomain = [30, 100]
 xScale = d3.scaleLog().base(2).domain(xDomain).range([0, width]) // value -> display
 var rValue = function(d) { return parseInt(d.PopulationTotal);}, // data -> value
@@ -82,14 +82,21 @@ var div = d3.select("body").append("div")
     .attr('cx',function(d,i) {return xScale(d.HealthExpCapita.trim().replace("$", "").replace(",", ""));})
         .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
         .attr('r', function(d, i) { return rScale(d.PopulationTotal) })
-        .on("mouseover", function(d) {		
+        .on("mouseover", function(d) {
+           d3.select(this).style("cursor", "pointer"); 	
             div.transition()		
                 .duration(200)		
                 .style("opacity", .9);		
-            div.html(d.LifeExpectancyMale + "<br/>"  + d.HealthExpCapita)	
+            div.html("LifeExpectancy: "+ d.LifeExpectancyMale + ", HealthExpCapita: "  + d.HealthExpCapita+ ", PopulationTotal: "  + Math.round(d.PopulationTotal/(Math.pow(10, 6)))+"M"+", Country: "+d.Country)	
                 .style("left", (d3.event.pageX) + "px")		
                 .style("top", (d3.event.pageY - 28) + "px");	
-            })	
+            })
+         .on("mouseout", function(d) {
+           d3.select(this).style("cursor", "default");
+           div.transition()		
+                .duration(200)		
+                .style("opacity", 0);	
+            })
 
    d3.select("svg")
   .append("g")
@@ -109,7 +116,7 @@ svg.append("text")
   d3.select("svg")
       .append("g")
       .attr("transform", "translate(" + margin / 2 + "," + (height + margin / 2) + ")")
-      .call(d3.axisBottom().scale(xScale).tickValues([10, 100, 1000, 10000]).tickFormat(d3.format("~s")));
+      .call(d3.axisBottom().scale(xScale).tickValues([10, 100, 1000, 8096]).tickFormat(d3.format("~s")));
 
   // text label for the x axis
 
