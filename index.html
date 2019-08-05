@@ -37,7 +37,7 @@ circle {fill: lightblue; stroke: black;}
 <div>
   <button class="button" onclick="displayLifeExpectancyVsHealth()">HealthExpCapita</button>
   <button class="button" onclick="displayLifeExpectancyVsInfantMortality()">InfantMortality</button>
-  <button class="button">Birth Rate</button>
+  <button class="button" onclick="displayLifeExpectancyVsBirthRate()">Birth Rate</button>
 </div>
 
 <!--label>
@@ -120,8 +120,33 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "InfantMortality";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
-
 }
+
+async function displayLifeExpectancyVsBirthRate() {
+  const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
+
+  height = 500;
+  width = 500;
+  maxRadius=15
+var xDomain = [0, 6]
+var yDomain = [30, 100]
+var xScale = d3.scaleLinear().domain(xDomain).range([0, width]) // value -> display
+var rValue = function(d) { return parseInt(d.PopulationTotal);}// data -> value
+var rDomain = [d3.min(data, rValue)-1, d3.max(data, rValue)+1];
+var rScale = d3.scaleLog().base(10).domain(rDomain).range([0,maxRadius]) // valu
+// setup y
+yScale = d3.scaleLinear().domain(yDomain).range([height, 0]) // value -> display
+startYear=2000;
+svg.selectAll("*").remove();
+updateLifeExpectancyVsBirthRate(data,  startYear, xScale, yScale, rScale);
+xText="Birth Rate";
+xTickValues=[0,1,2,3,4,5,6]
+updateAxisLabels(xScale, yScale, xTickValues, xText);
+chartType = "BirthRate";
+d3.select('#slider').selectAll("*").remove();
+creatSlider(data, chartType, xScale, yScale, rScale);
+}
+
 function creatSlider(data, chartType, xScale, yScale, rScale){
   var slider = d3
     .sliderHorizontal()
@@ -139,6 +164,9 @@ function creatSlider(data, chartType, xScale, yScale, rScale){
       break;
       case "InfantMortality":
         updateLifeExpectancyVsInfantMortality(data, year, xScale, yScale, rScale);
+        break;
+      case "BirthRate":
+        updateLifeExpectancyVsBirthRate(data, year, xScale, yScale, rScale);
         break;
       default:
         // code block
@@ -211,6 +239,37 @@ function updateLifeExpectancyVsInfantMortality(data, year, xScale, yScale, rScal
                 .style("opacity", 0);
             })
 }
+
+function updateLifeExpectancyVsBirthRate(data, year, xScale, yScale, rScale) {
+  var svg = d3.select("svg")
+                .append("g")
+                .attr("transform", "translate(" + margin / 2 + "," + margin / 2 + ")");
+  yearStr = "12/1/"+String(year).substring(2);
+  svg.selectAll("circle")
+    .data(data)
+    .enter()
+    .append("circle")
+    .filter(function(d) { return d.Year == yearStr })
+    .attr('cx',function(d,i) {return xScale(d["Birth Rate"].trim().replace("%", ""));})
+        .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
+        .attr('r', function(d, i) { return rScale(d.PopulationTotal) })
+        .on("mouseover", function(d) {
+           d3.select(this).style("cursor", "pointer");
+            div.transition()
+                .duration(200)
+                .style("opacity", .9);
+            div.html("LifeExpectancy: "+ d.LifeExpectancyMale + ", Birth Rate: "  + d["Birth Rate"]+ ", PopulationTotal: "  + Math.round(d.PopulationTotal/(Math.pow(10, 6)))+"M"+", Country: "+d.Country)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            })
+         .on("mouseout", function(d) {
+           d3.select(this).style("cursor", "default");
+           div.transition()
+                .duration(200)
+                .style("opacity", 0);
+            })
+}
+
 function updateAxisLabels(xScale, yScale, xTickValues=[10, 100, 1000, 8096], xText= "Health ExpCapita"){
    // setup x
 svg = d3.select("svg");
