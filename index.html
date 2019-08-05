@@ -38,6 +38,9 @@ circle {fill: lightblue; stroke: black;}
   <button class="button" onclick="displayLifeExpectancyVsHealth()">HealthExpCapita</button>
   <button class="button" onclick="displayLifeExpectancyVsInfantMortality()">InfantMortality</button>
   <button class="button" onclick="displayLifeExpectancyVsBirthRate()">Birth Rate</button>
+  <div>
+  <p>Interactive visualization of LifeExpectancy versus other factors. Please hover over display to get more information about a particular data point.</p>
+  </div>
 </div>
 
 <!--label>
@@ -62,19 +65,6 @@ var div = d3.select("body").append("div")
 var svg = d3.select("svg")
                 .append("g")
                 .attr("transform", "translate(" + margin / 2 + "," + margin / 2 + ")");
-
- const annotations = [{
-  note: { label: "Hi"},
-  x: 200, y: 200,
-  dy: 137, dx: 162,
-  subject: { radius: 50, radiusPadding: 10 }
-}]
-const makeAnnotations = d3.annotation().annotations(annotations)
-d3.select("svg").append("g")
-  .attr("class", "annotation-group")
-  .call(makeAnnotations)
-
-
 async function displayLifeExpectancyVsHealth() {
   const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
 
@@ -96,6 +86,8 @@ updateAxisLabels(xScale, yScale);
 chartType = "HealthExpCapita";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
+annotationText="Life expectancy increases when Health care expending per capita is higher";
+displayAnnotations(annotationText);
 }
 async function displayLifeExpectancyVsInfantMortality() {
   const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
@@ -120,6 +112,8 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "InfantMortality";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
+annotationText="Life expectancy is higher when infant mortality is lower";
+displayAnnotations(annotationText);
 }
 
 async function displayLifeExpectancyVsBirthRate() {
@@ -145,6 +139,21 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "BirthRate";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
+annotationText="Life expectancy decreases when birth rate is lower";
+displayAnnotations(annotationText);
+}
+
+function displayAnnotations(annotationText) {
+  const annotations = [{
+    note: { label: annotationText},
+    x: 380, y: 220,
+    dy: 50, dx: 50,
+    subject: { radius: 70, radiusPadding: 10 }
+  }]
+  const makeAnnotations = d3.annotation().annotations(annotations)
+  d3.select("svg").append("g")
+    .attr("class", "annotation-group")
+    .call(makeAnnotations)
 }
 
 function creatSlider(data, chartType, xScale, yScale, rScale){
