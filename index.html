@@ -40,7 +40,7 @@ circle {fill: lightblue; stroke: black;}
   <button class="button" onclick="displayLifeExpectancyVsBirthRate()">Birth Rate</button>
   <div>
   <p>Interactive visualization of LifeExpectancy versus other factors.
-    Please hover over display to get more information about a particular data point. Drag Year slider to change date and see chart updated with
+    Please hover over display to get more information about a particular data point. Drag Year slider at the <b>bottom</p> of page to change date and see chart updated with
   values for that particular year. The size of the circle corresponds to the <b>population</b> of the country. </p>
   </div>
 </div>
@@ -48,7 +48,7 @@ circle {fill: lightblue; stroke: black;}
 <svg width="600" height="600">
 </div>
 <div>
-  <p>Year</p>
+  <span>Year</span>
   <div id="slider"> </div>
 </div>
 
@@ -135,7 +135,7 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "BirthRate";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
-annotationText="Life expectancy decreases when birth rate is lower. The relationship may be due to some other underlying factors.";
+annotationText="Life expectancy increases when birth rate decreases. The relationship may be due to some other underlying factors.";
 displayAnnotations(annotationText);
 }
 
