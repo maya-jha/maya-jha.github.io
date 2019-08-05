@@ -1,4 +1,5 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Interactive Data Visualization</title>
 <style>
 .button {
   background-color: #4CAF50;
@@ -32,11 +33,11 @@ circle {fill: lightblue; stroke: black;}
 <!--script src= "slider.js"></script-->
 <script src="https://unpkg.com/d3-simple-slider"></script>
 </head>
-<body onload="init()">
+<body onload="displayLifeExpectancyVsHealth()">
 <div>
-  <button class="button" onclick="init()">LifeExpectancyMale</button>
-  <button class="button">LifeExpectancyRegion</button>
-  <button class="button">LifeExpectancy</button>
+  <button class="button" onclick="displayLifeExpectancyVsHealth()">HealthExpCapita</button>
+  <button class="button" onclick="displayLifeExpectancyVsInfantMortality()">InfantMortality</button>
+  <button class="button">Birth Rate</button>
 </div>
 
 <!--label>
@@ -50,7 +51,8 @@ circle {fill: lightblue; stroke: black;}
 <div>
 <svg width="600" height="600">
 </div>
-<div id="slider"></div>
+<p>Year</p>
+<div id="slider"> </div>
 <script>
 margin = 100;
   // Define the div for the tooltip
@@ -73,7 +75,7 @@ d3.select("svg").append("g")
   .call(makeAnnotations)
 
 
-async function init() {
+async function displayLifeExpectancyVsHealth() {
   const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
 
   height = 500;
@@ -81,18 +83,46 @@ async function init() {
   maxRadius=15
 var xDomain = [2, 4096*2]
 var yDomain = [30, 100]
-var xScale = d3.scaleLog().base(2).domain(xDomain).range([0, width]) // value -> display
+xScale = d3.scaleLog().base(2).domain(xDomain).range([0, width]) // value -> display
+var rValue = function(d) { return parseInt(d.PopulationTotal);}// data -> value
+var rDomain = [d3.min(data, rValue)-1, d3.max(data, rValue)+1];
+rScale = d3.scaleLog().base(10).domain(rDomain).range([0,maxRadius]) // valu
+// setup y
+yScale = d3.scaleLinear().domain(yDomain).range([height, 0]) // value -> display
+startYear=2000;
+svg.selectAll("*").remove();
+updateLifeExpectancyVsHealthExp(data,  startYear, xScale, yScale, rScale);
+updateAxisLabels(xScale, yScale);
+chartType = "HealthExpCapita";
+d3.select('#slider').selectAll("*").remove();
+creatSlider(data, chartType, xScale, yScale, rScale);
+}
+async function displayLifeExpectancyVsInfantMortality() {
+  const data = await d3.csv("https://maya-jha.github.io/data/wdi_mod.csv");
+
+  height = 500;
+  width = 500;
+  maxRadius=15
+var xDomain = [0, 15]
+var yDomain = [30, 100]
+var xScale = d3.scaleLinear().domain(xDomain).range([0, width]) // value -> display
 var rValue = function(d) { return parseInt(d.PopulationTotal);}// data -> value
 var rDomain = [d3.min(data, rValue)-1, d3.max(data, rValue)+1];
 var rScale = d3.scaleLog().base(10).domain(rDomain).range([0,maxRadius]) // valu
 // setup y
 yScale = d3.scaleLinear().domain(yDomain).range([height, 0]) // value -> display
 startYear=2000;
-updateLifeExpectancyVsHealthExp(data,  startYear, xScale, yScale, rScale);
-updateAxisLabels(xScale, yScale);
-creatSlider(data, xScale, yScale, rScale);
+svg.selectAll("*").remove();
+updateLifeExpectancyVsInfantMortality(data,  startYear, xScale, yScale, rScale);
+xText="InfantMortalityRate";
+xTickValues=[0,3,6,9,12,15]
+updateAxisLabels(xScale, yScale, xTickValues, xText);
+chartType = "InfantMortality";
+d3.select('#slider').selectAll("*").remove();
+creatSlider(data, chartType, xScale, yScale, rScale);
+
 }
-function creatSlider(data, xScale, yScale, rScale){
+function creatSlider(data, chartType, xScale, yScale, rScale){
   var slider = d3
     .sliderHorizontal()
     .min(2000)
@@ -103,7 +133,16 @@ function creatSlider(data, xScale, yScale, rScale){
     .on('onchange', year => {
       d3.select('#value').text(year);
       svg.selectAll("circle").remove();
-      updateLifeExpectancyVsHealthExp(data, year, xScale, yScale, rScale);
+      switch(chartType) {
+      case "HealthExpCapita":
+        updateLifeExpectancyVsHealthExp(data, year, xScale, yScale, rScale);
+      break;
+      case "InfantMortality":
+        updateLifeExpectancyVsInfantMortality(data, year, xScale, yScale, rScale);
+        break;
+      default:
+        // code block
+      }
     });
 
   d3.select('#slider')
@@ -143,8 +182,36 @@ function updateLifeExpectancyVsHealthExp(data, year, xScale, yScale, rScale) {
                 .style("opacity", 0);
             })
 }
-
-function updateAxisLabels(xScale, yScale){
+function updateLifeExpectancyVsInfantMortality(data, year, xScale, yScale, rScale) {
+  var svg = d3.select("svg")
+                .append("g")
+                .attr("transform", "translate(" + margin / 2 + "," + margin / 2 + ")");
+  yearStr = "12/1/"+String(year).substring(2);
+  svg.selectAll("circle")
+    .data(data)
+    .enter()
+    .append("circle")
+    .filter(function(d) { return d.Year == yearStr })
+    .attr('cx',function(d,i) {return xScale(d["Infant Mortality Rate"].trim().replace("%", ""));})
+        .attr('cy',function(d, i) { return yScale(d.LifeExpectancyMale); })
+        .attr('r', function(d, i) { return rScale(d.PopulationTotal) })
+        .on("mouseover", function(d) {
+           d3.select(this).style("cursor", "pointer");
+            div.transition()
+                .duration(200)
+                .style("opacity", .9);
+            div.html("LifeExpectancy: "+ d.LifeExpectancyMale + ", InfantMortalityRate: "  + d["Infant Mortality Rate"]+ ", PopulationTotal: "  + Math.round(d.PopulationTotal/(Math.pow(10, 6)))+"M"+", Country: "+d.Country)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            })
+         .on("mouseout", function(d) {
+           d3.select(this).style("cursor", "default");
+           div.transition()
+                .duration(200)
+                .style("opacity", 0);
+            })
+}
+function updateAxisLabels(xScale, yScale, xTickValues=[10, 100, 1000, 8096], xText= "Health ExpCapita"){
    // setup x
 svg = d3.select("svg");
    svg
@@ -165,7 +232,7 @@ svg.append("text")
   d3.select("svg")
       .append("g")
       .attr("transform", "translate(" + margin / 2 + "," + (height + margin / 2) + ")")
-      .call(d3.axisBottom().scale(xScale).tickValues([10, 100, 1000, 8096]).tickFormat(d3.format("~s")));
+      .call(d3.axisBottom().scale(xScale).tickValues(xTickValues).tickFormat(d3.format("~s")));
 
   // text label for the x axis
 
@@ -174,7 +241,7 @@ svg.append("text")
     .attr("text-anchor", "end")
     .attr("x", width)
     .attr("y", height - 6)
-    .text("Health ExpCapita");
+    .text(xText);
 
 }
 //loadSlider();
