@@ -39,23 +39,19 @@ circle {fill: lightblue; stroke: black;}
   <button class="button" onclick="displayLifeExpectancyVsInfantMortality()">InfantMortality</button>
   <button class="button" onclick="displayLifeExpectancyVsBirthRate()">Birth Rate</button>
   <div>
-  <p>Interactive visualization of LifeExpectancy versus other factors. Please hover over display to get more information about a particular data point.</p>
+  <p>Interactive visualization of LifeExpectancy versus other factors.
+    Please hover over display to get more information about a particular data point. Drag Year slider to change date and see chart updated with
+  values for that particular year.</p>
   </div>
 </div>
-
-<!--label>
-  Group
-  <select class="group-select">
-    <option value=1 selected>1</option>
-    <option value=2>2</option>
-    <option value=3>3</option>
-  </select>
-</label-->
 <div>
 <svg width="600" height="600">
 </div>
-<p>Year</p>
-<div id="slider"> </div>
+<div>
+  <p>Year</p>
+  <div id="slider"> </div>
+</div>
+
 <script>
 margin = 100;
   // Define the div for the tooltip
@@ -86,7 +82,7 @@ updateAxisLabels(xScale, yScale);
 chartType = "HealthExpCapita";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
-annotationText="Life expectancy increases when Health care expending per capita is higher";
+annotationText="Life expectancy increases when Health care spending per capita is higher. Countries can have better life expectancy when they spend more on health care.";
 displayAnnotations(annotationText);
 }
 async function displayLifeExpectancyVsInfantMortality() {
@@ -112,7 +108,7 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "InfantMortality";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
-annotationText="Life expectancy is higher when infant mortality is lower";
+annotationText="Life expectancy is higher when infant mortality is lower. This is not directly related but indicate that both high infant mortality rate and lower life expectancy are related probably due to the lack of quality health care.";
 displayAnnotations(annotationText);
 }
 
@@ -139,16 +135,16 @@ updateAxisLabels(xScale, yScale, xTickValues, xText);
 chartType = "BirthRate";
 d3.select('#slider').selectAll("*").remove();
 creatSlider(data, chartType, xScale, yScale, rScale);
-annotationText="Life expectancy decreases when birth rate is lower";
+annotationText="Life expectancy decreases when birth rate is lower. The relationship may be due to some other underlying factors.";
 displayAnnotations(annotationText);
 }
 
 function displayAnnotations(annotationText) {
   const annotations = [{
     note: { label: annotationText},
-    x: 380, y: 220,
+    x: 380, y: 205,
     dy: 50, dx: 50,
-    subject: { radius: 70, radiusPadding: 10 }
+    subject: { radius: 20, radiusPadding: 10 }
   }]
   const makeAnnotations = d3.annotation().annotations(annotations)
   d3.select("svg").append("g")
